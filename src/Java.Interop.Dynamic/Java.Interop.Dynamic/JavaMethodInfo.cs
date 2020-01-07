@@ -50,7 +50,7 @@ namespace Java.Interop.Dynamic {
 
 		protected override string JniReturnType {
 			get {
-				if (ReturnType == null)
+				if (ReturnType == null || ReturnType.Name == "V")
 					return "V";
 				return JniTypeSignature.Parse (ReturnType.Name).QualifiedReference;
 			}

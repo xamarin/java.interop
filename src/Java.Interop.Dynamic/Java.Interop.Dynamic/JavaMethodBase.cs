@@ -119,7 +119,7 @@ namespace Java.Interop.Dynamic {
 					if (JniEnvironment.Types.GetJniTypeNameFromClass (arguments [i]) != vm.TypeManager.GetTypeSignature (dargs [i].LimitType).Name)
 						return false;
 				}
-				else if (!JniEnvironment.Types.IsAssignableFrom (arguments [i], args [i].PeerReference))
+				else if (!JniEnvironment.Types.IsAssignableFrom (args [i].PeerReference, arguments [i]))
 					return false;
 			}
 			return true;
