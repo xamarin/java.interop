@@ -13,10 +13,29 @@
 		<method abstract="true" deprecated="not deprecated" final="false" name="close" native="false" return="void" static="false" synchronized="false" visibility="public">
 		</method>
 	  </interface>
-	  <class abstract="true" deprecated="not deprecated" extends="java.lang.Object" extends-generic-aware="java.lang.Object" 
+	  <class abstract="true" deprecated="not deprecated" extends="java.lang.Object" extends-generic-aware="java.lang.Object"
 	  		final="false" name="SomeObject" static="false" visibility="public">
 		<implements name="xamarin.test.I1" name-generic-aware="xamarin.test.I1" />
 		<implements name="xamarin.test.I2" name-generic-aware="xamarin.test.I2" />
+	  </class>
+    <class abstract="false" deprecated="not deprecated" extends="java.lang.Object" extends-generic-aware="java.lang.Object" final="false" name="Color" static="false" visibility="public">
+      <constructor deprecated="not deprecated" final="false" name="Color" jni-signature="()V" bridge="false" static="false" type="android.graphics.Color" synthetic="false" visibility="public" />
+      <method abstract="false" deprecated="not deprecated" final="false" name="blue" bridge="false" native="false" return="float" static="false" synchronized="false" synthetic="false" visibility="public" />
+      <method abstract="false" deprecated="not deprecated" final="false" name="blue" bridge="false" native="false" return="float" static="true" synchronized="false" synthetic="false" visibility="public">
+        <parameter name="color" type="long"></parameter>
+      </method>
+      <field deprecated="not deprecated" final="true" name="BLACK" jni-signature="I" static="true" transient="false" type="int" type-generic-aware="int" value="-16777216" visibility="public" volatile="false"></field>
+      <field deprecated="not deprecated" final="true" name="BLUE" jni-signature="I" static="true" transient="false" type="int" type-generic-aware="int" value="-16776961" visibility="public" volatile="false"></field>
+    </class>
+    <class abstract="false" deprecated="not deprecated" extends="java.lang.Object" extends-generic-aware="java.lang.Object" jni-extends="Ljava/lang/Object;" final="false" name="Action" static="true" visibility="public">
+      <method abstract="false" deprecated="not deprecated" final="false" name="getIcon" bridge="false" native="false" return="int" static="false" synchronized="false" synthetic="false" visibility="public" />
+      <field deprecated="not deprecated" final="false" name="icon" jni-signature="I" static="false" transient="false" type="int" type-generic-aware="int" visibility="public" volatile="false" deprecated-since="23"></field>
+      <field deprecated="not deprecated" final="true" name="SEMANTIC_ACTION_ARCHIVE" jni-signature="I" static="true" transient="false" type="int" type-generic-aware="int" value="5" visibility="public" volatile="false"></field>
+    </class>
+    <class abstract="true" deprecated="not deprecated" extends="java.lang.Object" extends-generic-aware="java.lang.Object" final="false" name="Blues" static="false" visibility="public">
+      <field deprecated="not deprecated" final="true" name="BLUE" jni-signature="I" static="true" transient="false" type="int" type-generic-aware="int" value="-16776961" visibility="public" volatile="false"></field>
+      <field deprecated="not deprecated" final="true" name="blue" jni-signature="I" static="false" transient="false" type="int" type-generic-aware="int" value="10" visibility="public" volatile="false"></field>
+      <method abstract="false" deprecated="not deprecated" final="false" name="getBlue" native="false" return="int" static="true" synchronized="false" visibility="public" />
 	  </class>
 	</package>
 </api>

@@ -41,6 +41,14 @@ namespace MonoDroid.Generation
 		internal abstract void WriteFieldGetBody (Field field, string indent, GenBase type);
 		internal abstract void WriteFieldSetBody (Field field, string indent, GenBase type);
 
+		[Flags]
+		public enum FieldFlags
+		{
+			None = 0,
+			Instance = 1,
+			Static = 2,
+		}
+
 		public void WriteClass (ClassGen @class, string indent, GenerationInfo gen_info)
 		{
 			Context.ContextTypes.Push (@class);
@@ -95,7 +103,7 @@ namespace MonoDroid.Generation
 					sb.ToString ());
 			writer.WriteLine ();
 
-			var seen = new HashSet<string> ();
+			var seen = new Dictionary<string, FieldFlags> ();
 			WriteFields (@class.Fields, indent + "\t", @class, seen);
 			bool haveNested = false;
 			foreach (var iface in @class.GetAllImplementedInterfaces ()
@@ -390,31 +398,56 @@ namespace MonoDroid.Generation
 			}
 		}
 
-		public bool WriteFields (List<Field> fields, string indent, GenBase gen, HashSet<string> seen = null)
+		public bool WriteFields (List<Field> fields, string indent, GenBase gen, Dictionary<string, FieldFlags> seen = null)
 		{
 			bool needsProperty = false;
 			foreach (Field f in fields) {
-				if (gen.ContainsName (f.Name)) {
-					Report.Warning (0, Report.WarningFieldNameCollision, "Skipping {0}.{1}, due to a duplicate field, method or nested type name. {2} (Java type: {3})", gen.FullName, f.Name, gen.HasNestedType (f.Name) ? "(Nested type)" : gen.ContainsProperty (f.Name, false) ? "(Property)" : "(Method)", gen.JavaName);
-					continue;
+
+				// Get the flag corresponding the field.
+				var flag = f.IsStatic ? FieldFlags.Static : FieldFlags.Instance;
+
+				// Check if there is already a field in the dictionary and if there is check to see if the field has same flag as current one.
+				var fieldFlags = FieldFlags.None;
+				if (seen != null && seen.TryGetValue (f.Name, out fieldFlags)) {
+
+					// If flag is the same then we should skip.
+					if ((fieldFlags & flag) == flag) {
+						Report.Warning (0, Report.WarningDuplicateField, "Skipping {0}.{1}, due to a duplicate field. (Field) (Java type: {2})", gen.FullName, f.Name, gen.JavaName);
+						continue;
+					}
 				}
-				if (seen != null && seen.Contains (f.Name)) {
-					Report.Warning (0, Report.WarningDuplicateField, "Skipping {0}.{1}, due to a duplicate field. (Field) (Java type: {2})", gen.FullName, f.Name, gen.JavaName);
-					continue;
-				}
+
 				if (f.Validate (opt, gen.TypeParameters, Context)) {
-					if (seen != null)
-						seen.Add (f.Name);
+
+					// Check if we should add or update item on dictionary.
+					if (seen != null) {
+						if (fieldFlags == FieldFlags.None) {
+							// Dictionary does not have any item correspndig current field.
+							seen.Add (f.Name, flag);
+						} else {
+							// Dictionary have an item  already, so we should just update the item flag.
+							seen [f.Name] |= flag;
+						}
+					}
+
 					needsProperty = needsProperty || f.NeedsProperty;
 					writer.WriteLine ();
-					WriteField (f, indent, gen);
+					var hasNameCollision = gen.ContainsName (f.Name);
+					WriteField (f, indent, gen, hasNameCollision);
 				}
 			}
 			return needsProperty;
 		}
 
-		internal virtual void WriteField (Field field, string indent, GenBase type)
+		internal virtual void WriteField (Field field, string indent, GenBase type, bool hasNameCollision = false)
 		{
+			var fieldName = field.Name;
+
+			// Check if there is a name collision, if there is we should append one underscore for nonstatic and 2 underscores to static.
+			if (hasNameCollision) {
+				fieldName += field.IsStatic ? "__" : "_";
+			}
+
 			if (field.IsEnumified)
 				writer.WriteLine ("[global::Android.Runtime.GeneratedEnum]");
 			if (field.NeedsProperty) {
@@ -423,7 +456,7 @@ namespace MonoDroid.Generation
 				writer.WriteLine ();
 				writer.WriteLine ("{0}// Metadata.xml XPath field reference: path=\"{1}/field[@name='{2}']\"", indent, type.MetadataXPathReference, field.JavaName);
 				writer.WriteLine ("{0}[Register (\"{1}\"{2})]", indent, field.JavaName, field.AdditionalAttributeString ());
-				writer.WriteLine ("{0}{1} {2}{3} {4} {{", indent, field.Visibility, field.IsStatic ? "static " : String.Empty, fieldType, field.Name);
+				writer.WriteLine ("{0}{1} {2}{3} {4} {{", indent, field.Visibility, field.IsStatic ? "static " : string.Empty, fieldType, fieldName);
 				writer.WriteLine ("{0}\tget {{", indent);
 				WriteFieldGetBody (field, indent + "\t\t", type);
 				writer.WriteLine ("{0}\t}}", indent);
@@ -445,7 +478,7 @@ namespace MonoDroid.Generation
 					writer.WriteLine ("{0}{1}", indent, field.Annotation);
 
 				// the Value complication is due to constant enum from negative integer value (C# compiler requires explicit parenthesis).
-				writer.WriteLine ("{0}{1} const {2} {3} = ({2}) {4};", indent, field.Visibility, opt.GetOutputName (field.Symbol.FullName), field.Name, field.Value.Contains ('-') && field.Symbol.FullName.Contains ('.') ? '(' + field.Value + ')' : field.Value);
+				writer.WriteLine ("{0}{1} const {2} {3} = ({2}) {4};", indent, field.Visibility, opt.GetOutputName (field.Symbol.FullName), fieldName, field.Value.Contains ('-') && field.Symbol.FullName.Contains ('.') ? '(' + field.Value + ')' : field.Value);
 			}
 		}
 
@@ -711,7 +744,7 @@ namespace MonoDroid.Generation
 			if (!opt.SupportInterfaceConstants)
 				return;
 
-			var seen = new HashSet<string> ();
+			var seen = new Dictionary<string, FieldFlags> ();
 			var fields = iface.GetGeneratableFields (opt).ToList ();
 
 			WriteFields (fields, indent, iface, seen);
@@ -739,7 +772,7 @@ namespace MonoDroid.Generation
 				writer.WriteLine ("{0}\t{{", indent);
 				writer.WriteLine ("{0}\t}}", indent);
 
-				var seen = new HashSet<string> ();
+				var seen = new Dictionary<string, FieldFlags> ();
 				bool needsClassRef = WriteFields (@interface.Fields, indent + "\t", @interface, seen) || staticMethods.Any ();
 				foreach (var iface in @interface.GetAllImplementedInterfaces ().OfType<InterfaceGen> ()) {
 					writer.WriteLine ();
