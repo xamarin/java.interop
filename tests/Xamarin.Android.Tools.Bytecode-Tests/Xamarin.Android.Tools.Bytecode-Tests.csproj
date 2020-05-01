@@ -50,7 +50,7 @@
     <TestKotlinJar Include="kotlin\**\*.kt" />
   </ItemGroup>
 
-  <Target Name="BuildClasses" BeforeTargets="BeforeBuild" Inputs="@(TestJar)" Outputs="@(TestJar->'$(IntermediateOutputPath)classes\%(RecursiveDir)%(Filename).class')">
+  <Target Name="BuildClasses" BeforeTargets="BeforeBuild" DependsOnTargets="FindJdk" Inputs="@(TestJar)" Outputs="@(TestJar->'$(IntermediateOutputPath)classes\%(RecursiveDir)%(Filename).class')">
     <MakeDir Directories="$(IntermediateOutputPath)classes" />
     <Exec Command="&quot;$(JavaCPath)&quot; -parameters $(_JavacSourceOptions) -g -d &quot;$(IntermediateOutputPath)classes&quot; java\android\annotation\NonNull.java @(TestJar->'%(Identity)', ' ')" />
     <Exec Command="&quot;$(JavaCPath)&quot; $(_JavacSourceOptions) -g -d &quot;$(IntermediateOutputPath)classes&quot; @(TestJarNoParameters->'%(Identity)', ' ')" />

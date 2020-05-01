@@ -35,6 +35,7 @@
   </Target>
   <Target Name="BuildInteropJar"
       AfterTargets="AfterCompile"
+      DependsOnTargets="FindJdk"
       Inputs="@(CompileJavaInteropJar)"
       Outputs="$(OutputPath)java-interop.jar">
     <MakeDir Directories="$(OutputPath);$(IntermediateOutputPath)ji-classes" />

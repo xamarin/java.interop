@@ -1,0 +1,30 @@
+<Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003' ToolsVersion="15.0">
+
+    <UsingTask TaskName="FindJdk" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildBinPath)\Microsoft.Build.Tasks.Core.dll">
+        <Task>
+            <Code Source="$(MSBuildThisFileDirectory)FindJdk.cs" Language="C#" />
+        </Task>
+    </UsingTask>
+    
+    <Target Name="FindJdk">
+      <FindJdk Condition=" '$(JdkPath)' == '' ">
+        <Output TaskParameter="JdkPath" PropertyName="_JdkPath"/>
+      </FindJdk>
+      
+      <PropertyGroup Condition=" '$(JdkJvmPath)' == '' ">
+        <JdkJvmPath>$(_JdkPath)jre\bin\server\jvm.dll</JdkJvmPath>
+      </PropertyGroup>
+      
+      <ItemGroup Condition=" '$(JdkJvmPath)' == '' ">
+        <JdkIncludePath Include="$(_JdkPath)include" />
+        <JdkIncludePath Include="$(_JdkPath)include\win32" />
+      </ItemGroup>
+      
+      <PropertyGroup>
+        <JavaPath Condition=" '$(JavaPath)' == '' ">$(_JdkPath)bin\java.exe</JavaPath>
+        <JavaCPath Condition=" '$(JavaCPath)' == '' ">$(_JdkPath)bin\javac.exe</JavaCPath>
+        <JarPath Condition=" '$(JarPath)' == '' ">$(_JdkPath)bin\jar.exe</JarPath>
+      </PropertyGroup>
+    </Target>
+        
+</Project>

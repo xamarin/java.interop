@@ -30,28 +30,12 @@ jobs:
     inputs:
       version: $(DotNetCoreVersion)
 
-  - task: NuGetToolInstaller@0
-    inputs:
-      versionSpec: 5.x
-
-  - task: NuGetCommand@2
-    inputs:
-      command: restore
-      restoreSolution: 'external\xamarin-android-tools\Xamarin.Android.Tools.sln'
-      
-  - task: MSBuild@1
-    displayName: MSBuild Java.Interop.sln /t:Prepare
-    inputs:
-      solution: Java.Interop.sln
-      configuration: $(Build.Configuration)
-      msbuildArguments: /t:Prepare
-
   - task: MSBuild@1
     displayName: MSBuild Java.Interop.sln
     inputs:
       solution: Java.Interop.sln
       configuration: $(Build.Configuration)
-      msbuildArguments: '/t:Restore,Build'
+      msbuildArguments: '/restore /t:Build'
     
   - task: MSBuild@1
     displayName: MSBuild RunNUnitTests.targets
@@ -85,11 +69,8 @@ jobs:
     
   - script: |
       dotnet tool install --global boots  
-      boots https://download.mono-project.com/archive/6.4.0/macos-10-universal/MonoFramework-MDK-6.4.0.198.macos10.xamarin.universal.pkg
-    displayName: Install Mono 6.4
-    
-  - script: make prepare CONFIGURATION=$(Build.Configuration)
-    displayName: make prepare
+      boots --stable Mono
+    displayName: Install Mono-Stable
     
   - script: make all CONFIGURATION=$(Build.Configuration)
     displayName: make all

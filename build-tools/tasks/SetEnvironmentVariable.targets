@@ -1,0 +1,9 @@
+<Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003' ToolsVersion="15.0">
+
+    <UsingTask TaskName="SetEnvironmentVariable" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildBinPath)\Microsoft.Build.Tasks.Core.dll">
+        <Task>
+            <Code Source="$(MSBuildThisFileDirectory)SetEnvironmentVariable.cs" Language="C#" />
+        </Task>
+    </UsingTask>
+    
+</Project>

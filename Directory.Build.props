@@ -9,10 +9,7 @@
       Project="$(MSBuildThisFileDirectory)Configuration.Override.props"
       Condition="Exists('$(MSBuildThisFileDirectory)Configuration.Override.props')"
   />
-  <Import
-      Project="$(_OutputPath)JdkInfo.props"
-      Condition="Exists('$(_OutputPath)JdkInfo.props')"
-  />
+  <Import Project="$(MSBuildThisFileDirectory)build-tools\tasks\FindJdk.targets" />
   <Import
       Project="$(_OutputPath)MonoInfo.props"
       Condition="Exists('$(_OutputPath)MonoInfo.props')"

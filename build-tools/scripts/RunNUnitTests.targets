@@ -8,16 +8,14 @@
     <_NUnit>$(_Runtime) packages\nunit.consolerunner\3.9.0\tools\nunit3-console.exe</_NUnit>
     <_Run Condition=" '$(RUN)' != '' ">--run=&quot;$(RUN)&quot;</_Run>
   </PropertyGroup>
-  <Import
-      Condition=" Exists('..\..\bin\Build$(Configuration)\JdkInfo.props') "
-      Project="..\..\bin\Build$(Configuration)\JdkInfo.props"
-  />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\..\bin\Build$(Configuration)\Java.Interop.BootstrapTasks.dll" TaskName="Java.Interop.BootstrapTasks.SetEnvironmentVariable" />
+  <Import Project="$(_TopDir)\build-tools\tasks\FindJdk.targets" />
+  <Import Project="$(_TopDir)\build-tools\tasks\SetEnvironmentVariable.targets" />
   <ItemGroup>
     <_TestAssembly Include="$(_TopDir)\bin\Test$(Configuration)\*-*Tests.dll" Condition=" '$(TestAssembly)' == '' " />
     <_TestAssembly Include="$(TestAssembly)" Condition=" '$(TestAssembly)' != '' " />
   </ItemGroup>
   <Target Name="RunTests"
+      DependsOnTargets="FindJdk"
       Outputs="$(_TopDir)\TestResult-%(_TestAssembly.Filename).xml">
     <ItemGroup>
       <_JavaInteropNativeLibrary Include="$(_TopDir)\bin\$(Configuration)\libjava-interop.*" />

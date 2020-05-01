@@ -12,9 +12,6 @@ NATIVE_EXT = .so
 DLLMAP_OS_NAME = linux
 endif
 
-PREPARE_EXTERNAL_FILES  = \
-	external/xamarin-android-tools/src/Xamarin.Android.Tools.AndroidSdk/Xamarin.Android.Tools.AndroidSdk.csproj
-
 DEPENDENCIES = \
 	bin/Test$(CONFIGURATION)/libNativeTiming$(NATIVE_EXT)
 
@@ -35,36 +32,24 @@ PTESTS = \
 ATESTS = \
 	bin/Test$(CONFIGURATION)/Android.Interop-Tests.dll
 
-BUILD_PROPS = bin/Build$(CONFIGURATION)/JdkInfo.props bin/Build$(CONFIGURATION)/MonoInfo.props
+BUILD_PROPS = bin/Build$(CONFIGURATION)/MonoInfo.props
 
-all: $(DEPENDENCIES) $(TESTS)
-
+all: 
+	$(MSBUILD) $(MSBUILD_FLAGS) /restore Java.Interop.sln
+  
 run-all-tests:
 	r=0; \
 	$(MAKE) run-tests                 || r=1 ; \
 	$(MAKE) run-test-jnimarshal       || r=1 ; \
 	$(MAKE) run-test-generator-core   || r=1 ; \
-	$(MAKE) run-ptests                || r=1 ; \
 	exit $$r;
 
 include build-tools/scripts/msbuild.mk
 
 prepare:: $(BUILD_PROPS) src/Java.Runtime.Environment/Java.Runtime.Environment.dll.config
 
-prepare:: prepare-bootstrap
+prepare:: 
 	$(MSBUILD) $(MSBUILD_FLAGS) /t:Restore Java.Interop.sln
-
-prepare-bootstrap: prepare-external bin/Build$(CONFIGURATION)/Java.Interop.BootstrapTasks.dll
-
-bin/Build$(CONFIGURATION)/Java.Interop.BootstrapTasks.dll: build-tools/Java.Interop.BootstrapTasks/Java.Interop.BootstrapTasks.csproj \
-		external/xamarin-android-tools/src/Xamarin.Android.Tools.AndroidSdk/Xamarin.Android.Tools.AndroidSdk.csproj \
-		$(wildcard build-tools/Java.Interop.BootstrapTasks/Java.Interop.BootstrapTasks/*.cs)
-	$(MSBUILD) $(MSBUILD_FLAGS) /restore "$<"
-
-prepare-external $(PREPARE_EXTERNAL_FILES):
-	git submodule update --init --recursive
-	(cd external/xamarin-android-tools && $(MAKE) prepare)
-	nuget restore
 
 clean:
 	-$(MSBUILD) $(MSBUILD_FLAGS) /t:Clean

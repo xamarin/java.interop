@@ -8,7 +8,7 @@
     <_NuGet>$(_NuGetPath)\NuGet.exe</_NuGet>
   </PropertyGroup>
   <UsingTask AssemblyFile="$(_TopDir)\bin\Build$(Configuration)\Java.Interop.BootstrapTasks.dll" TaskName="Java.Interop.BootstrapTasks.JdkInfo" />
-  <UsingTask AssemblyFile="$(_TopDir)\bin\Build$(Configuration)\Java.Interop.BootstrapTasks.dll" TaskName="Java.Interop.BootstrapTasks.DownloadUri" />
+  <Import Project="$(_TopDir)\build-tools\tasks\DownloadUri.targets" />
   <Target Name="Prepare">
     <Exec Command="git submodule update --init --recursive" WorkingDirectory="$(_TopDir)" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\..\build-tools\Java.Interop.BootstrapTasks\Java.Interop.BootstrapTasks.csproj" />
