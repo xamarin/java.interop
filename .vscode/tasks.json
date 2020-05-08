@@ -62,6 +62,18 @@
             "problemMatcher": [
                 "$msCompile"
             ]
-        }
+        },
+        {
+          "label": "build-generator-utilities",
+          "type": "shell",
+          "command": "msbuild build-tools/generator-utilities/generator-utilities.csproj /restore /t:Build",
+          "group": {
+              "kind": "build",
+              "isDefault": true
+          },
+          "problemMatcher": [
+              "$msCompile"
+          ]
+      },
     ]
 }

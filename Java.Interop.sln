@@ -87,6 +87,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Java.Interop.Tools.JavaSour
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "param-name-importer", "tools\param-name-importer\param-name-importer.csproj", "{0E3AF6C1-7638-464D-9174-485D494499DC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "generator-utilities", "build-tools\generator-utilities\generator-utilities.csproj", "{4AA9A4FA-68EE-4F4C-B6B4-91BDEC3E36F2}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Java.Interop.NamingCustomAttributes\Java.Interop.NamingCustomAttributes.projitems*{58b564a1-570d-4da2-b02d-25bddb1a9f4f}*SharedItemsImports = 5
@@ -239,6 +241,10 @@ Global
 		{0E3AF6C1-7638-464D-9174-485D494499DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E3AF6C1-7638-464D-9174-485D494499DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E3AF6C1-7638-464D-9174-485D494499DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AA9A4FA-68EE-4F4C-B6B4-91BDEC3E36F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AA9A4FA-68EE-4F4C-B6B4-91BDEC3E36F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AA9A4FA-68EE-4F4C-B6B4-91BDEC3E36F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AA9A4FA-68EE-4F4C-B6B4-91BDEC3E36F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -280,6 +286,7 @@ Global
 		{E34BCFA0-CAA4-412C-AA1C-75DB8D67D157} = {172B608B-E6F3-41CC-9949-203A76BA247C}
 		{093B5E94-7FB7-499F-9C11-30944BAFEE25} = {271C9F30-F679-4793-942B-0D9527CB3E2F}
 		{0E3AF6C1-7638-464D-9174-485D494499DC} = {C8F58966-94BF-407F-914A-8654F8B8AE3B}
+		{4AA9A4FA-68EE-4F4C-B6B4-91BDEC3E36F2} = {172B608B-E6F3-41CC-9949-203A76BA247C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {29204E0C-382A-49A0-A814-AD7FBF9774A5}

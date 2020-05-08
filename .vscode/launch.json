@@ -43,6 +43,40 @@
         "obj/Debug/android-29/mcw/api.xml"
       ],
       "cwd": "${workspaceRoot}/../xamarin-android/src/Mono.Android",
+    },
+    {
+      "name": "Validating missing types and fields.",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-generator-utilities",
+      "program": "${workspaceRoot}/build-tools/generator-utilities/bin/Debug/netcoreapp3.1/generator-utilities.dll",
+      "args": [
+        "--fields-validator",
+        "--assembly-location=../xamarin-android-2/bin/Debug/lib/xamarin.android/xbuild-frameworks/MonoAndroid/v10.0",
+        "--metadata-location=../xamarin-android-2/src/Mono.Android",
+        "--enum-map=../xamarin-android-2/src/Mono.Android",
+        "--exclude-packages", "android", "junit.framework", "junit.runner",
+      ],
+      "cwd": "${workspaceRoot}",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": "Add Api level enum",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-generator-utilities",
+      "program": "${workspaceRoot}/build-tools/generator-utilities/bin/Debug/netcoreapp3.1/generator-utilities.dll",
+      "args": [
+        "--generate--enums",
+        "--skip-cache", "false",
+        "--api-level", "R",
+        "--xa-repo", "${workspaceRoot}/../xamarin-android",
+        "--skip-enumeration-file", "${workspaceRoot}/build-tools/generator-utilities/Enums/skipenumeration.txt",
+      ],
+      "cwd": "${workspaceRoot}",
+      "stopAtEntry": false,
+      "console": "internalConsole"
     }
   ]
 }
