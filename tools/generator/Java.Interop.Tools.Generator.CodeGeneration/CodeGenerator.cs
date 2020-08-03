@@ -396,7 +396,8 @@ namespace MonoDroid.Generation
 					continue;
 				}
 				if (seen != null && seen.Contains (f.Name)) {
-					Report.Warning (0, Report.WarningDuplicateField, "Skipping {0}.{1}, due to a duplicate field. (Field) (Java type: {2})", gen.FullName, f.Name, gen.JavaName);
+					// This is not an actionable message, so it is not written as a warning.
+					Report.Verbose (0, $"BG{Report.WarningDuplicateField:X04}: Skipping {gen.FullName}.{f.Name}, due to a duplicate field. (Field) (Java type: {gen.JavaName})");
 					continue;
 				}
 				if (f.Validate (opt, gen.TypeParameters, Context)) {
