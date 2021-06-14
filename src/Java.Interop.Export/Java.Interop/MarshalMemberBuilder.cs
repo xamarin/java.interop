@@ -254,21 +254,20 @@ namespace Java.Interop {
 			funcTypeParams.RemoveRange (0, 2);
 			var marshalDelegateName = new StringBuilder ();
 			marshalDelegateName.Append ("_JniMarshal_PP");
-			foreach (var paramType in funcTypeParams) {
-				marshalDelegateName.Append (GetJniMarshalDelegateParameterIdentifier (paramType));
-			}
-			marshalDelegateName.Append ("_");
-			if (returnType == null) {
-				marshalDelegateName.Append ("V");
-			} else {
-				marshalDelegateName.Append (GetJniMarshalDelegateParameterIdentifier (returnType));
-			}
+			AddMarshalerTypeNameSuffix (marshalDelegateName, returnType, funcTypeParams);
 
 			Type marshalDelegateType = declaringType.Assembly.GetType (marshalDelegateName.ToString (), throwOnError: false);
 
-			// Punt?; System.Linq.Expressions will automagically produce the needed delegate type.
-			// Unfortunately, this won't work with jnimarshalmethod-gen.exe.
 			return marshalDelegateType;
+		}
+
+		public static void AddMarshalerTypeNameSuffix (StringBuilder sb, Type returnType, List<Type> funcTypeParams)
+		{
+			foreach (var paramType in funcTypeParams)
+				sb.Append (GetJniMarshalDelegateParameterIdentifier (paramType));
+
+			sb.Append ("_");
+			sb.Append (returnType == null ? 'V' : GetJniMarshalDelegateParameterIdentifier (returnType));
 		}
 
 		static char GetJniMarshalDelegateParameterIdentifier (Type type)

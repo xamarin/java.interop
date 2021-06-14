@@ -14,17 +14,19 @@ namespace Xamarin.Android.Tools.JniMarshalMethodGenerator
 		AssemblyDefinition Source { get; }
 		AssemblyDefinition Destination { get; }
 		string DestinationPath { get; }
+		List<Type> DelegateTypes { get; }
 		Dictionary<string, System.Reflection.Emit.TypeBuilder> Types { get; }
 		DirectoryAssemblyResolver Resolver { get; }
 
 		MethodReference consoleWriteLine;
 		TypeDefinitionCache cache;
 
-		public TypeMover (AssemblyDefinition source, AssemblyDefinition destination, string destinationPath, Dictionary<string, System.Reflection.Emit.TypeBuilder> types, DirectoryAssemblyResolver resolver, TypeDefinitionCache cache)
+		public TypeMover (AssemblyDefinition source, AssemblyDefinition destination, string destinationPath, List<Type> delegateTypes, Dictionary<string, System.Reflection.Emit.TypeBuilder> types, DirectoryAssemblyResolver resolver, TypeDefinitionCache cache)
 		{
 			Source = source;
 			Destination = destination;
 			DestinationPath = destinationPath;
+			DelegateTypes = delegateTypes;
 			Types = types;
 			Resolver = resolver;
 			this.cache = cache;
@@ -44,6 +46,11 @@ namespace Xamarin.Android.Tools.JniMarshalMethodGenerator
 
 			typeMap.Clear ();
 			resolvedTypeMap.Clear ();
+
+			foreach (var type in DelegateTypes) {
+				MoveDelegate (type);
+				movedTypesCount++;
+			}
 
 			foreach (var type in Types.Values) {
 				Move (type);
@@ -69,6 +76,34 @@ namespace Xamarin.Android.Tools.JniMarshalMethodGenerator
 		bool TypeIsEmptyOrHasOnlyDefaultConstructor (TypeDefinition type)
 		{
 			return !type.HasMethods || (type.Methods.Count == 1 && type.Methods [0].IsConstructor);
+		}
+
+		void MoveDelegate (Type type)
+		{
+			var typeSrc = Source.MainModule.GetType (type.GetCecilName ());
+			var typeDst = new TypeDefinition ("", typeSrc.Name, typeSrc.Attributes);
+			var module = Destination.MainModule;
+
+			if (App.Verbose) {
+				Console.Write ($"Moving delegate type ");
+				App.ColorWrite ($"{typeSrc.FullName},{typeSrc.Module.FileName}", ConsoleColor.Yellow);
+				Console.Write (" to ");
+				App.ColorWriteLine ($"{Destination.MainModule.FileName}", ConsoleColor.Yellow);
+			}
+
+			typeDst.BaseType = GetUpdatedType (typeSrc.BaseType, module);
+
+			foreach (var m in typeSrc.Methods) {
+				var md = new MethodDefinition (m.Name, m.Attributes, GetUpdatedType (m.ReturnType, module));
+				md.ImplAttributes = m.ImplAttributes;
+
+				foreach (var p in m.Parameters)
+					md.Parameters.Add (new ParameterDefinition (p.Name, p.Attributes, GetUpdatedType (p.ParameterType, module)));
+
+				typeDst.Methods.Add (md);
+			}
+
+			Destination.MainModule.Types.Add (typeDst);
 		}
 
 		void Move (Type type)
@@ -343,6 +378,7 @@ namespace Xamarin.Android.Tools.JniMarshalMethodGenerator
 					var mr = GetUpdatedMethod (m, module);
 					if (type is GenericInstanceType)
 						mr.DeclaringType = type;
+
 					return mr;
 				}
 			}

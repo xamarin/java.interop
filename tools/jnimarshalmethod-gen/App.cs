@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -12,6 +13,7 @@ using Mono.Cecil;
 using Mono.Options;
 using Mono.Collections.Generic;
 using Java.Interop.Tools.Cecil;
+using System.Text;
 
 #if _DUMP_REGISTER_NATIVE_MEMBERS
 using Mono.Linq.Expressions;
@@ -285,6 +287,7 @@ namespace Xamarin.Android.Tools.JniMarshalMethodGenerator {
 			var destDir         = string.IsNullOrEmpty (outDirectory) ? Path.GetDirectoryName (path) : outDirectory;
 			var builder         = CreateExportedMemberBuilder ();
 			var matchType       = typeNameRegexes.Count > 0;
+			var newDelegates    = new List<Type> ();
 
 			if (Verbose)
 				ColorWriteLine ($"Preparing marshal method assembly '{assemblyName}'", ConsoleColor.Cyan);
@@ -414,7 +417,7 @@ namespace Xamarin.Android.Tools.JniMarshalMethodGenerator {
 					if (signature == null)
 						signature = builder.GetJniMethodSignature (method);
 
-					registrationElements.Add (CreateRegistration (name, signature, lambda, targetType, methodName));
+					registrationElements.Add (CreateRegistration (name, signature, lambda, targetType, methodName, dm, newDelegates));
 
 					addedMethods.Add (methodName);
 				}
@@ -436,7 +439,7 @@ namespace Xamarin.Android.Tools.JniMarshalMethodGenerator {
 			if (!string.IsNullOrEmpty (outDirectory))
 				path = Path.Combine (outDirectory, Path.GetFileName (path));
 
-			var mover = new TypeMover (dstAssembly, ad, path, definedTypes, resolver, cache);
+			var mover = new TypeMover (dstAssembly, ad, path, newDelegates, definedTypes, resolver, cache);
 			mover.Move ();
 
 			if (!keepTemporary)
@@ -460,7 +463,18 @@ namespace Xamarin.Android.Tools.JniMarshalMethodGenerator {
 			typeof (string),
 		});
 
-		static Expression CreateRegistration (string method, string signature, LambdaExpression lambda, ParameterExpression targetType, string methodName)
+		static void CreateDelegateRuntimeManagedMethod (TypeBuilder tb, string name, Type returnType, Type[] parameterTypes)
+		{
+			var mb = tb.DefineMethod (name,
+				System.Reflection.MethodAttributes.Public |
+				System.Reflection.MethodAttributes.HideBySig |
+				System.Reflection.MethodAttributes.NewSlot |
+				System.Reflection.MethodAttributes.Virtual,
+				CallingConventions.Standard, returnType, parameterTypes);
+			mb.SetImplementationFlags (System.Reflection.MethodImplAttributes.Runtime | System.Reflection.MethodImplAttributes.Managed);
+		}
+
+		static Expression CreateRegistration (string method, string signature, LambdaExpression lambda, ParameterExpression targetType, string methodName, ModuleBuilder dm, List<Type> createdDelegateList)
 		{
 			Expression registrationDelegateType = null;
 			if (lambda.Type.Assembly == typeof (object).Assembly ||
@@ -468,9 +482,51 @@ namespace Xamarin.Android.Tools.JniMarshalMethodGenerator {
 				registrationDelegateType = Expression.Constant (lambda.Type, typeof (Type));
 			}
 			else {
+				string delegateTypeName;
+				if (lambda.Type.Assembly.IsDynamic) {
+					var typeNameBuilder = new StringBuilder ("__<$>_jni_marshal_");
+					var parameterTypes = new List<Type> ();
+					foreach (var p in lambda.Parameters) {
+						parameterTypes.Add (p.Type);
+					}
+
+					MarshalMemberBuilder.AddMarshalerTypeNameSuffix (typeNameBuilder, lambda.ReturnType, parameterTypes);
+
+					var typeName = typeNameBuilder.ToString ();
+					var existingType = dm.GetType (typeName);
+					if (existingType == null) {
+						var dtb = dm.DefineType (typeName,
+							System.Reflection.TypeAttributes.AnsiClass |
+							System.Reflection.TypeAttributes.Sealed,
+							typeof (MulticastDelegate));
+
+						var dc = dtb.DefineConstructor (
+							System.Reflection.MethodAttributes.Public |
+							System.Reflection.MethodAttributes.HideBySig |
+							System.Reflection.MethodAttributes.RTSpecialName |
+							System.Reflection.MethodAttributes.SpecialName,
+							CallingConventions.Standard, new Type [] { typeof (object), typeof (IntPtr) });
+						dc.SetImplementationFlags (System.Reflection.MethodImplAttributes.Runtime | System.Reflection.MethodImplAttributes.Managed);
+
+						CreateDelegateRuntimeManagedMethod (dtb, "Invoke", typeof (bool), parameterTypes.ToArray ());
+
+						parameterTypes.Add (typeof (AsyncCallback));
+						parameterTypes.Add (typeof (object));
+
+						CreateDelegateRuntimeManagedMethod (dtb, "BeginInvoke", typeof (IAsyncResult), parameterTypes.ToArray ());
+						CreateDelegateRuntimeManagedMethod (dtb, "EndInvoke", typeof (bool), new Type [] { typeof (IAsyncResult) });
+
+						existingType = dtb.CreateType ();
+						createdDelegateList.Add (existingType);
+					}
+
+					delegateTypeName = existingType.FullName;
+				} else
+					delegateTypeName = lambda.Type.FullName;
+
 				Func<string, bool, Type> getType = Type.GetType;
 				registrationDelegateType = Expression.Call (getType.GetMethodInfo (),
-						Expression.Constant (lambda.Type.FullName, typeof (string)),
+						Expression.Constant (delegateTypeName, typeof (string)),
 						Expression.Constant (true, typeof (bool)));
 				registrationDelegateType = Expression.Convert (registrationDelegateType, typeof (Type));
 			}
