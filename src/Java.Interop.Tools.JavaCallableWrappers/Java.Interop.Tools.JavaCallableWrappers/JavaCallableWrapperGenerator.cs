@@ -550,17 +550,35 @@ namespace Java.Interop.Tools.JavaCallableWrappers {
 			sw.WriteLine ("\textends " + extendsType);
 			sw.WriteLine ("\timplements");
 			sw.Write ("\t\tmono.android.IGCUserPeer");
-			IEnumerable<TypeDefinition> ifaces = type.Interfaces.Select (ifaceInfo => ifaceInfo.InterfaceType)
-				.Select (r => r.Resolve ())
-				.Where (d => GetRegisterAttributes (d).Any ());
-			if (ifaces.Any ()) {
-				foreach (TypeDefinition iface in ifaces) {
-					sw.WriteLine (",");
-					sw.Write ("\t\t{0}", GetJavaTypeName (iface));
-				}
+
+			foreach (var iface in GetImplmentedInterfaces (type)) {
+				sw.WriteLine (",");
+				sw.Write ("\t\t{0}", GetJavaTypeName (iface));
 			}
+
 			sw.WriteLine ();
 			sw.WriteLine ("{");
+		}
+
+		IEnumerable<TypeDefinition> GetImplmentedInterfaces (TypeDefinition type)
+		{
+			// Find interfaces with [Register] attributes
+			var ifaces = type.Interfaces.Select (ifaceInfo => ifaceInfo.InterfaceType)
+				.Select (r => r.Resolve ())
+				.Where (d => GetRegisterAttributes (d).Any ()).ToList ();
+
+			// Remove interfaces that are inherited by other referenced interfaces
+			return ifaces.Where (i => !IsAssignableFromAny (i, ifaces));
+		}
+
+		bool IsAssignableFromAny (TypeDefinition t, IEnumerable<TypeDefinition> all)
+		{
+			// Returns if 't' is assignable from any type in 'all'
+			foreach (var o in all)
+				if (!ReferenceEquals (t, o) && t.IsAssignableFrom (o, cache))
+					return true;
+
+			return false;
 		}
 
 		void GenerateBody (TextWriter sw)

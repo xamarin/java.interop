@@ -323,4 +323,21 @@ namespace Xamarin.Android.ToolsTests {
 		[Export (Throws = new Type [0])]
 		public ExportsThrowsConstructors (string value) { }
 	}
+
+	[Register ("register.genericIFace")]
+	interface GenericIFace<T> : IJavaObject
+	{
+		void Foo (T value);
+	}
+
+	[Register ("register.specificInterface")]
+	interface SpecificInterface : GenericIFace<string>
+	{
+	}
+
+	[Register ("register.nonGenericImplementorClass")]
+	class NonGenericImplementorClass : Java.Lang.Object, SpecificInterface
+	{
+		public void Foo (string value) => throw new NotImplementedException ();
+	}
 }

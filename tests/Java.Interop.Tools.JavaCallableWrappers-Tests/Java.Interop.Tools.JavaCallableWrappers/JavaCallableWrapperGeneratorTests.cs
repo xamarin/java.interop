@@ -616,6 +616,16 @@ public class ExampleInstrumentation
 ";
 			Assert.AreEqual (expected, actual);
 		}
+
+		[Test]
+		public void GenerateMultipleInterfaces ()
+		{
+			var actual = Generate (typeof (NonGenericImplementorClass));
+
+			Assert.True (actual.Contains ("mono.android.IGCUserPeer"));
+			Assert.True (actual.Contains ("specificInterface"));
+			Assert.False (actual.Contains ("genericIFace"));
+		}
 	}
 }
 
