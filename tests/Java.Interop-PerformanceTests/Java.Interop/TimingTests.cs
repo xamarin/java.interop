@@ -403,6 +403,37 @@ namespace Java.Interop.PerformanceTests {
 	}
 
 	[TestFixture]
+	class JniFieldLookupTiming : Java.InteropTests.JavaVMFixture {
+
+		[Test]
+		public void FieldLookupTiming ()
+		{
+			const string JniType = "com/xamarin/interop/performance/JavaTiming";
+			const string EncodedMember = "instanceIntField.I";
+			const int count = 10000;
+
+			var strLookupTime = Stopwatch.StartNew ();
+			for (int i = 0; i < count; ++i) {
+				var p = new JniPeerMembers (JniType, typeof (JavaTiming));
+				var f = p.InstanceFields.GetFieldInfo (EncodedMember);
+			}
+			strLookupTime.Stop ();
+
+			var encLookupTime = Stopwatch.StartNew ();
+			for (int i = 0; i < count; ++i) {
+				var p = new JniPeerMembers (JniType, typeof (JavaTiming));
+				var lookup = new JniMemberInfoLookup (EncodedMember, "instanceIntField"u8, "I"u8);
+				var f = p.InstanceFields.GetFieldInfo (lookup);
+			}
+			encLookupTime.Stop ();
+
+			Console.WriteLine ($"# {nameof (FieldLookupTiming)} Timing: looking up JavaTiming.instanceIntField {count} times");
+			Console.WriteLine ($"#   .InstanceMethods.GetFieldInfo(string):              {strLookupTime.Elapsed}");
+			Console.WriteLine ($"#   .InstanceMethods.GetFieldInfo(JniMemberInfoLookup): {encLookupTime.Elapsed}");
+		}
+	}
+
+	[TestFixture]
 	class JavaArrayTiming : Java.InteropTests.JavaVMFixture {
 
 		[Test]

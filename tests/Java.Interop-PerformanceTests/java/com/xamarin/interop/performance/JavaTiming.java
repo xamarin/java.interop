@@ -2,6 +2,8 @@ package com.xamarin.interop.performance;
 
 public class JavaTiming {
 
+	public int instanceIntField;
+
 	public static void StaticVoidMethod ()
 	{
 	}

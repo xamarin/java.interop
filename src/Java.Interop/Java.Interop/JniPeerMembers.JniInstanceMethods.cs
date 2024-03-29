@@ -157,6 +157,48 @@ namespace Java.Interop
 			return JniPeerType.GetInstanceMethod (method, signature);
 		}
 
+
+		public JniMethodInfo GetMethodInfo (JniMemberInfoLookup member)
+		{
+			lock (InstanceMethods) {
+				if (InstanceMethods.TryGetValue (member.EncodedMember, out var m)) {
+					return m;
+				}
+			}
+			var info = GetMethodInfo (member.MemberName, member.MemberSignature);
+			lock (InstanceMethods) {
+				if (InstanceMethods.TryGetValue (member.EncodedMember, out var m)) {
+					return m;
+				}
+				InstanceMethods.Add (member.EncodedMember, info);
+			}
+			return info;
+		}
+
+		JniMethodInfo GetMethodInfo (ReadOnlySpan<byte> method, ReadOnlySpan<byte> signature)
+		{
+			var m              = (JniMethodInfo?) null;
+			var newMethod      = JniEnvironment.Runtime.TypeManager.GetReplacementMethodInfo (Members.JniPeerTypeName, method, signature);
+			if (newMethod.HasValue) {
+				var typeName   = newMethod.Value.TargetJniType ?? Members.JniPeerTypeName;
+				var methodName = newMethod.Value.TargetJniMethodName ?? method.ToString ();
+				var methodSig  = newMethod.Value.TargetJniMethodSignature ?? signature.ToString ();
+
+				using var t = new JniType (typeName);
+				if (newMethod.Value.TargetJniMethodInstanceToStatic &&
+						t.TryGetStaticMethod (methodName, methodSig, out m)) {
+					m.ParameterCount = newMethod.Value.TargetJniMethodParameterCount;
+					m.StaticRedirect = new JniType (typeName);
+					return m;
+				}
+				if (t.TryGetInstanceMethod (methodName, methodSig, out m)) {
+					return m;
+				}
+				Console.Error.WriteLine ($"warning: For declared method `{Members.JniPeerTypeName}.{method.ToString ()}.{signature.ToString ()}`, could not find requested method `{typeName}.{methodName}.{methodSig}`!");
+			}
+			return JniPeerType.GetInstanceMethod (method, signature);
+		}
+
 		public unsafe JniObjectReference StartCreateInstance (string constructorSignature, Type declaringType, JniArgumentValue* parameters)
 		{
 			if (constructorSignature == null)

@@ -19,6 +19,10 @@ using System.Diagnostics.CodeAnalysis;
 
 // See: 045b8af7, 6a42bb89, f60906cf, e10f7cb0, etc.
 [assembly: SuppressMessage ("Design", "CA1034:Nested types should not be visible", Justification = "Deliberate choice to 'hide' these types from code completion for `Java.Interop.`.", Scope = "type", Target = "~T:Java.Interop.JniEnvironment.Exceptions")]
+[assembly: SuppressMessage ("Design", "CA1034:Nested types should not be visible", Justification = "Deliberate choice to 'hide' these types from code completion for `Java.Interop.`.", Scope = "type", Target = "~T:Java.Interop.JniEnvironment.InstanceFields")]
+[assembly: SuppressMessage ("Design", "CA1034:Nested types should not be visible", Justification = "Deliberate choice to 'hide' these types from code completion for `Java.Interop.`.", Scope = "type", Target = "~T:Java.Interop.JniEnvironment.InstanceMethods")]
+[assembly: SuppressMessage ("Design", "CA1034:Nested types should not be visible", Justification = "Deliberate choice to 'hide' these types from code completion for `Java.Interop.`.", Scope = "type", Target = "~T:Java.Interop.JniEnvironment.StaticFields")]
+[assembly: SuppressMessage ("Design", "CA1034:Nested types should not be visible", Justification = "Deliberate choice to 'hide' these types from code completion for `Java.Interop.`.", Scope = "type", Target = "~T:Java.Interop.JniEnvironment.StaticMethods")]
 [assembly: SuppressMessage ("Design", "CA1034:Nested types should not be visible", Justification = "Deliberate choice to 'hide' these types from code completion for `Java.Interop.`.", Scope = "type", Target = "~T:Java.Interop.JniPeerMembers.JniStaticMethods")]
 [assembly: SuppressMessage ("Design", "CA1034:Nested types should not be visible", Justification = "Deliberate choice to 'hide' these types from code completion for `Java.Interop.`.", Scope = "type", Target = "~T:Java.Interop.JniRuntime.JniMarshalMemberBuilder")]
 [assembly: SuppressMessage ("Design", "CA1034:Nested types should not be visible", Justification = "Deliberate choice to 'hide' these types from code completion for `Java.Interop.`.", Scope = "type", Target = "~T:Java.Interop.JniPeerMembers.JniStaticFields")]

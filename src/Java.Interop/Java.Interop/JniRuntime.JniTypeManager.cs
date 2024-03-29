@@ -423,6 +423,22 @@ namespace Java.Interop {
 
 			protected virtual ReplacementMethodInfo? GetReplacementMethodInfoCore (string jniSimpleReference, string jniMethodName, string jniMethodSignature) => null;
 
+			public ReplacementMethodInfo? GetReplacementMethodInfo (string jniSimpleReference, ReadOnlySpan<byte> jniMethodName, ReadOnlySpan<byte> jniMethodSignature)
+			{
+				AssertValid ();
+				AssertSimpleReference (jniSimpleReference, nameof (jniSimpleReference));
+				if (jniMethodName.IsEmpty) {
+					throw new ArgumentNullException (nameof (jniMethodName));
+				}
+				if (jniMethodSignature.IsEmpty) {
+					throw new ArgumentNullException (nameof (jniMethodSignature));
+				}
+
+				return GetReplacementMethodInfoCore (jniSimpleReference, jniMethodName, jniMethodSignature);
+			}
+
+			protected virtual ReplacementMethodInfo? GetReplacementMethodInfoCore (string jniSimpleReference, ReadOnlySpan<byte> jniMethodName, ReadOnlySpan<byte> jniMethodSignature) => null;
+
 			public virtual void RegisterNativeMembers (
 					JniType nativeClass,
 					[DynamicallyAccessedMembers (MethodsAndPrivateNested)]

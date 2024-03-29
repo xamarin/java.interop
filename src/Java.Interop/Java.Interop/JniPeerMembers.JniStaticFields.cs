@@ -30,6 +30,17 @@ namespace Java.Interop
 			}
 		}
 
+		public JniFieldInfo GetFieldInfo (JniMemberInfoLookup member)
+		{
+			lock (StaticFields) {
+				if (!StaticFields.TryGetValue (member.EncodedMember, out var f)) {
+					f = Members.JniPeerType.GetInstanceField (member.MemberName, member.MemberSignature);
+					StaticFields.Add (member.EncodedMember, f);
+				}
+				return f;
+			}
+		}
+
 		internal void Dispose ()
 		{
 			StaticFields.Clear ();

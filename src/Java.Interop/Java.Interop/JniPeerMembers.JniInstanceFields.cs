@@ -34,6 +34,17 @@ namespace Java.Interop
 				return f;
 			}
 		}
+
+		public JniFieldInfo GetFieldInfo (JniMemberInfoLookup member)
+		{
+			lock (InstanceFields) {
+				if (!InstanceFields.TryGetValue (member.EncodedMember, out var f)) {
+					f = Members.JniPeerType.GetInstanceField (member.MemberName, member.MemberSignature);
+					InstanceFields.Add (member.EncodedMember, f);
+				}
+				return f;
+			}
+		}
 	}}
 }
 
