@@ -10,7 +10,7 @@ namespace Java.Interop.Tools.JavaTypeSystem
 	{
 		// We *should* do this, but ApiXmlAdjuster does not, so we have this flag for compatibility.
 		// If a member on an interface cannot be resolved and needs to be removed, remove the whole interface.
-		public bool RemoveInterfacesWithUnresolvableMembers { get; set; } = false;
+		public bool RemoveInterfacesWithUnresolvableMembers { get; set; } = true;
 
 		public static TypeResolutionOptions Default => new TypeResolutionOptions ();
 
