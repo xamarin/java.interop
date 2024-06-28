@@ -210,7 +210,27 @@ namespace Java.Interop {
 			return JniEnvironment.InstanceFields.GetFieldID (PeerReference, name, signature);
 		}
 
+		public JniFieldInfo GetInstanceField (ReadOnlySpan<byte> name, ReadOnlySpan<byte> signature)
+		{
+			AssertValid ();
+
+			return JniEnvironment.InstanceFields.GetFieldID (PeerReference, name, signature);
+		}
+
 		public JniFieldInfo GetCachedInstanceField ([NotNull] ref JniFieldInfo? cachedField, string name, string signature)
+		{
+			AssertValid ();
+
+			if (cachedField != null && cachedField.IsValid)
+				return cachedField;
+			var m = GetInstanceField (name, signature);
+			if (Interlocked.CompareExchange (ref cachedField, m, null) != null) {
+				// No cleanup required; let the GC collect the unused instance
+			}
+			return cachedField;
+		}
+
+		public JniFieldInfo GetCachedInstanceField ([NotNull] ref JniFieldInfo? cachedField, ReadOnlySpan<byte> name, ReadOnlySpan<byte> signature)
 		{
 			AssertValid ();
 
@@ -230,6 +250,14 @@ namespace Java.Interop {
 			return JniEnvironment.StaticFields.GetStaticFieldID (PeerReference, name, signature);
 		}
 
+
+		public JniFieldInfo GetStaticField (ReadOnlySpan<byte> name, ReadOnlySpan<byte> signature)
+		{
+			AssertValid ();
+
+			return JniEnvironment.StaticFields.GetStaticFieldID (PeerReference, name, signature);
+		}
+
 		public JniFieldInfo GetCachedStaticField ([NotNull] ref JniFieldInfo? cachedField, string name, string signature)
 		{
 			AssertValid ();
@@ -243,7 +271,27 @@ namespace Java.Interop {
 			return cachedField;
 		}
 
+		public JniFieldInfo GetCachedStaticField ([NotNull] ref JniFieldInfo? cachedField, ReadOnlySpan<byte> name, ReadOnlySpan<byte> signature)
+		{
+			AssertValid ();
+
+			if (cachedField != null && cachedField.IsValid)
+				return cachedField;
+			var m = GetStaticField (name, signature);
+			if (Interlocked.CompareExchange (ref cachedField, m, null) != null) {
+				// No cleanup required; let the GC collect the unused instance
+			}
+			return cachedField;
+		}
+
 		public JniMethodInfo GetInstanceMethod (string name, string signature)
+		{
+			AssertValid ();
+
+			return JniEnvironment.InstanceMethods.GetMethodID (PeerReference, name, signature);
+		}
+
+		public JniMethodInfo GetInstanceMethod (ReadOnlySpan<byte> name, ReadOnlySpan<byte> signature)
 		{
 			AssertValid ();
 
@@ -308,6 +356,19 @@ namespace Java.Interop {
 			return cachedMethod;
 		}
 
+		public JniMethodInfo GetCachedInstanceMethod ([NotNull] ref JniMethodInfo? cachedMethod, ReadOnlySpan<byte> name, ReadOnlySpan<byte> signature)
+		{
+			AssertValid ();
+
+			if (cachedMethod != null && cachedMethod.IsValid)
+				return cachedMethod;
+			var m = GetInstanceMethod (name, signature);
+			if (Interlocked.CompareExchange (ref cachedMethod, m, null) != null) {
+				// No cleanup required; let the GC collect the unused instance
+			}
+			return cachedMethod;
+		}
+
 		public JniMethodInfo GetStaticMethod (string name, string signature)
 		{
 			AssertValid ();
@@ -315,6 +376,13 @@ namespace Java.Interop {
 			return JniEnvironment.StaticMethods.GetStaticMethodID (PeerReference, name, signature);
 		}
 
+
+		public JniMethodInfo GetStaticMethod (ReadOnlySpan<byte> name, ReadOnlySpan<byte> signature)
+		{
+			AssertValid ();
+
+			return JniEnvironment.StaticMethods.GetStaticMethodID (PeerReference, name, signature);
+		}
 #if NET
 		internal bool TryGetStaticMethod (string name, string signature, [NotNullWhen(true)] out JniMethodInfo? method)
 		{
@@ -360,7 +428,27 @@ namespace Java.Interop {
 		}
 #endif  // NET
 
+		internal bool TryGetStaticMethod (ReadOnlySpan<byte> name, ReadOnlySpan<byte> signature, [NotNullWhen(true)] out JniMethodInfo? method)
+		{
+			AssertValid ();
+
+			return JniEnvironment.StaticMethods.TryGetStaticMethod (PeerReference, name, signature, out method);
+		}
+
 		public JniMethodInfo GetCachedStaticMethod ([NotNull] ref JniMethodInfo? cachedMethod, string name, string signature)
+		{
+			AssertValid ();
+
+			if (cachedMethod != null && cachedMethod.IsValid)
+				return cachedMethod;
+			var m = GetStaticMethod (name, signature);
+			if (Interlocked.CompareExchange (ref cachedMethod, m, null) != null) {
+				// No cleanup required; let the GC collect the unused instance
+			}
+			return cachedMethod;
+		}
+
+		public JniMethodInfo GetCachedStaticMethod ([NotNull] ref JniMethodInfo? cachedMethod, ReadOnlySpan<byte> name, ReadOnlySpan<byte> signature)
 		{
 			AssertValid ();
 
